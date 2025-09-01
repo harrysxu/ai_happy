@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI工具分享 - Claude Code & Cursor 完全指南</title>
+    <meta name="description" content="全面的AI开发工具分享平台，涵盖Claude Code和Cursor的深度教程与实践指南">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #4facfe;
+            --success-color: #00d2ff;
+            --warning-color: #ff6b6b;
+            --bg-color: #0a0e27;
+            --surface-color: #1a1f3a;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a9c0;
+            --text-dark: #1a1a1a;
+            --border-color: #2a2f4a;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #4facfe 0%, #00d2ff 100%);
+            --gradient-accent: linear-gradient(135deg, #667eea 0%, #4facfe 100%);
+            --shadow-light: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* 背景动画 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var(--gradient-primary);
+            opacity: 0.8;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.03)"/><circle cx="20" cy="80" r="0.5" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(1deg); }
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 31, 58, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: var(--gradient-secondary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-secondary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* 主容器 */
+        .main-container {
+            margin-top: 80px;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* 英雄区域 */
+        .hero-section {
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.4rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 300;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            line-height: 1.8;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #00d2ff;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* 主要内容区域 */
+        .content-section {
+            background: var(--card-bg);
+            margin: 0 2rem 3rem;
+            border-radius: 24px;
+            box-shadow: var(--shadow-heavy);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .section-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"><animate attributeName="r" values="2;3;2" dur="3s" repeatCount="indefinite"/></circle><circle cx="80" cy="20" r="1" fill="rgba(255,255,255,0.1)"><animate attributeName="r" values="1;2;1" dur="2s" repeatCount="indefinite"/></circle><circle cx="50" cy="80" r="1.5" fill="rgba(255,255,255,0.1)"><animate attributeName="r" values="1.5;2.5;1.5" dur="4s" repeatCount="indefinite"/></circle></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        .section-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .section-description {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* 文章网格 */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            padding: 3rem 2rem;
+        }
+
+        .article-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            color: var(--text-dark);
+        }
+
+        .article-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(79, 172, 254, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .article-card:hover::before {
+            left: 100%;
+        }
+
+        .article-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border-color: var(--accent-color);
+        }
+
+        .article-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .article-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .article-icon.claude-code {
+            background: var(--gradient-primary);
+        }
+
+        .article-icon.cursor {
+            background: var(--gradient-secondary);
+        }
+
+        .article-meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-category {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.7;
+            margin-bottom: 0.2rem;
+        }
+
+        .article-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .article-description {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .article-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tag {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            color: var(--primary-color);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .article-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gradient-primary);
+            color: white;
+            text-decoration: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .article-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .article-link.cursor-link {
+            background: var(--gradient-secondary);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .article-link.cursor-link:hover {
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+        }
+
+        /* 页脚 */
+        .footer {
+            background: rgba(26, 31, 58, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 3rem 2rem 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--gradient-secondary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .copyright {
+            color: var(--text-secondary);
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-section {
+                padding: 4rem 1rem 2rem;
+            }
+
+            .content-section {
+                margin: 0 1rem 2rem;
+            }
+
+            .articles-grid {
+                grid-template-columns: 1fr;
+                padding: 2rem 1rem;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gradient-secondary);
+        }
+
+        /* 动画类 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-in-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: all 0.6s ease;
+        }
+
+        .slide-in-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-in-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: all 0.6s ease;
+        }
+
+        .slide-in-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">
+                <i class="fas fa-rocket"></i>
+                AI工具分享
+            </div>
+            <ul class="nav-links">
+                <li><a href="#claudecode">Claude Code</a></li>
+                <li><a href="#cursor">Cursor</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- 英雄区域 -->
+        <section class="hero-section">
+            <h1 class="hero-title">AI工具分享平台</h1>
+            <p class="hero-subtitle">探索Claude Code与Cursor的无限可能</p>
+            <p class="hero-description">
+                深度解析现代AI开发工具，从入门到精通的完整指南。
+                涵盖Claude Code的强大功能和Cursor编辑器的智能特性。
+            </p>
+            
+            <div class="stats-container">
+                <div class="stat-item fade-in">
+                    <span class="stat-number">13</span>
+                    <span class="stat-label">专业教程</span>
+                </div>
+                <div class="stat-item fade-in">
+                    <span class="stat-number">2</span>
+                    <span class="stat-label">核心工具</span>
+                </div>
+                <div class="stat-item fade-in">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">实战导向</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Claude Code 分类 -->
+        <section id="claudecode" class="content-section fade-in">
+            <div class="section-header">
+                <div class="section-content">
+                    <div class="section-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h2 class="section-title">Claude Code</h2>
+                    <p class="section-description">
+                        AI原生的编程工具，革命性的代理式开发体验。
+                        从CLI命令到智能路由，从专业化分工到无限扩展。
+                    </p>
+                </div>
+            </div>
+            
+            <div class="articles-grid">
+                <article class="article-card slide-in-left">
+                    <div class="article-header">
+                        <div class="article-icon claude-code">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">核心功能</span>
+                            <h3 class="article-title">五大核心功能深度解析</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        全面深入解析Claude Code的五大核心功能：CLI命令、斜杠命令、Settings设置、内存管理和MCP协议。从基础操作到高级配置的完整指南。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">CLI命令</span>
+                        <span class="tag">斜杠命令</span>
+                        <span class="tag">Settings</span>
+                        <span class="tag">内存管理</span>
+                        <span class="tag">MCP协议</span>
+                    </div>
+                    <a href="ClaudeCode/claude-code-02.html" class="article-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+
+                <article class="article-card slide-in-right">
+                    <div class="article-header">
+                        <div class="article-icon claude-code">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">配置指南</span>
+                            <h3 class="article-title">配置完全指南</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        从入门到精通的Claude Code配置教程，涵盖CLI命令详解、斜杠命令定制、Settings五层体系、内存管理策略等核心配置方法。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">配置管理</span>
+                        <span class="tag">最佳实践</span>
+                        <span class="tag">性能优化</span>
+                    </div>
+                    <a href="ClaudeCode/claude-code-config.html" class="article-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+
+                <article class="article-card slide-in-left">
+                    <div class="article-header">
+                        <div class="article-icon claude-code">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">多模型对比</span>
+                            <h3 class="article-title">多模型适配深度对比</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        探索Claude Sonnet 4、Kimi K2、GLM-4.5、Qwen3-Coder-Plus四大主流LLM的性能评测，通过贪吃蛇游戏开发实战对比各模型能力。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">模型对比</span>
+                        <span class="tag">性能评测</span>
+                        <span class="tag">实战案例</span>
+                        <span class="tag">成本优化</span>
+                    </div>
+                    <a href="ClaudeCode/claude-code-llm-comparison.html" class="article-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+
+                <article class="article-card slide-in-right">
+                    <div class="article-header">
+                        <div class="article-icon claude-code">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">身份重塑</span>
+                            <h3 class="article-title">Output Styles 完全指南</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        解锁AI编程助手的无限可能，从软件工程师到全能专家。深度解析Output Styles如何改变智能体的核心人格和专业身份。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">身份定制</span>
+                        <span class="tag">输出风格</span>
+                        <span class="tag">专业化</span>
+                        <span class="tag">最佳实践</span>
+                    </div>
+                    <a href="ClaudeCode/claude-code-output-styles-guide.html" class="article-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+
+                <article class="article-card slide-in-left">
+                    <div class="article-header">
+                        <div class="article-icon claude-code">
+                            <i class="fas fa-route"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">智能路由</span>
+                            <h3 class="article-title">Router 解锁AI开发新境界</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        将Claude Code的强大前端与任意模型后端完美结合。探索智能路由、成本优化、隐私保护等七大核心特性的革命性突破。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">智能路由</span>
+                        <span class="tag">成本优化</span>
+                        <span class="tag">模型切换</span>
+                        <span class="tag">隐私保护</span>
+                    </div>
+                    <a href="ClaudeCode/claude-code-router-demo.html" class="article-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+
+                <article class="article-card slide-in-right">
+                    <div class="article-header">
+                        <div class="article-icon claude-code">
+                            <i class="fas fa-paint-brush"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">界面设计</span>
+                            <h3 class="article-title">UI重设计方案</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        Claude Code用户界面的现代化重设计，提升用户体验和视觉美感。探索新的交互模式和设计理念。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">UI设计</span>
+                        <span class="tag">用户体验</span>
+                        <span class="tag">界面优化</span>
+                    </div>
+                    <a href="ClaudeCode/claude-code-ui-redesign.html" class="article-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+
+                <article class="article-card slide-in-left">
+                    <div class="article-header">
+                        <div class="article-icon claude-code">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">专家团队</span>
+                            <h3 class="article-title">Sub-Agents 深度解析</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        从单一助手到专家团队的AI革命。深度解析Sub-Agents的专业化分工、上下文隔离、可复用资产等核心优势和应用场景。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">专业分工</span>
+                        <span class="tag">团队协作</span>
+                        <span class="tag">上下文管理</span>
+                        <span class="tag">工作流</span>
+                    </div>
+                    <a href="ClaudeCode/claude-sub-agents-share.html" class="article-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+            </div>
+        </section>
+
+        <!-- Cursor 分类 -->
+        <section id="cursor" class="content-section fade-in">
+            <div class="section-header">
+                <div class="section-content">
+                    <div class="section-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <h2 class="section-title">Cursor</h2>
+                    <p class="section-description">
+                        智能代码编辑器的未来。集成AI的强大编程环境，
+                        提升开发效率的同时保护代码隐私和安全。
+                    </p>
+                </div>
+            </div>
+            
+            <div class="articles-grid">
+                <article class="article-card slide-in-left">
+                    <div class="article-header">
+                        <div class="article-icon cursor">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">任务管理</span>
+                            <h3 class="article-title">Claude Task Master</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        Claude Task Master的强大任务管理功能，帮助开发者更好地组织和跟踪项目进度，提升团队协作效率。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">任务管理</span>
+                        <span class="tag">项目协作</span>
+                        <span class="tag">进度跟踪</span>
+                    </div>
+                    <a href="cursor/claude-task-master.html" class="article-link cursor-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+
+                <article class="article-card slide-in-right">
+                    <div class="article-header">
+                        <div class="article-icon cursor">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">新版本特性</span>
+                            <h3 class="article-title">Cursor 1.0 功能特性</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        全面介绍Cursor 1.0版本的新功能和改进，包括增强的AI代码补全、智能重构、调试助手等核心特性。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">新功能</span>
+                        <span class="tag">AI补全</span>
+                        <span class="tag">智能重构</span>
+                        <span class="tag">版本更新</span>
+                    </div>
+                    <a href="cursor/cursor_1.0_feature.html" class="article-link cursor-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+
+                <article class="article-card slide-in-left">
+                    <div class="article-header">
+                        <div class="article-icon cursor">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">隐私保护</span>
+                            <h3 class="article-title">Cursor 隐私指南</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        深入了解Cursor的隐私保护机制，学习如何在享受AI编程便利的同时，确保代码和数据的安全性。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">隐私保护</span>
+                        <span class="tag">数据安全</span>
+                        <span class="tag">安全配置</span>
+                    </div>
+                    <a href="cursor/cursor-privacy-guide.html" class="article-link cursor-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+
+                <article class="article-card slide-in-right">
+                    <div class="article-header">
+                        <div class="article-icon cursor">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">使用规则</span>
+                            <h3 class="article-title">Cursor 使用规则 (第一部分)</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        Cursor使用规则的详细解读第一部分，涵盖基础操作规范、代码风格要求、团队协作规则等核心内容。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">使用规则</span>
+                        <span class="tag">操作规范</span>
+                        <span class="tag">团队协作</span>
+                    </div>
+                    <a href="cursor/cursor-rules-01.html" class="article-link cursor-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+
+                <article class="article-card slide-in-left">
+                    <div class="article-header">
+                        <div class="article-icon cursor">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">使用规则</span>
+                            <h3 class="article-title">Cursor 使用规则 (第二部分)</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        Cursor使用规则的深入解读第二部分，深入探讨高级功能使用、性能优化技巧、故障排除等进阶内容。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">高级功能</span>
+                        <span class="tag">性能优化</span>
+                        <span class="tag">故障排除</span>
+                    </div>
+                    <a href="cursor/cursor-rules-02.html" class="article-link cursor-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+
+                <article class="article-card slide-in-right">
+                    <div class="article-header">
+                        <div class="article-icon cursor">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="article-meta">
+                            <span class="article-category">使用规则</span>
+                            <h3 class="article-title">Cursor 使用规则 (第三部分)</h3>
+                        </div>
+                    </div>
+                    <p class="article-description">
+                        Cursor使用规则的完整解读第三部分，涵盖专家级技巧、最佳实践案例、企业级应用等高级主题。
+                    </p>
+                    <div class="article-tags">
+                        <span class="tag">专家技巧</span>
+                        <span class="tag">最佳实践</span>
+                        <span class="tag">企业应用</span>
+                    </div>
+                    <a href="cursor/cursor-rules-03.html" class="article-link cursor-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        阅读详情
+                    </a>
+                </article>
+            </div>
+        </section>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <h3 class="footer-title">开启AI开发新时代</h3>
+            <p class="footer-description">
+                探索Claude Code与Cursor的强大功能，提升开发效率，拥抱AI编程的未来。
+                持续更新最新教程和实践指南，与开发者社区共同成长。
+            </p>
+            
+            <div class="social-links">
+                <a href="#" class="social-link" title="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="#" class="social-link" title="Bilibili">
+                    <i class="fas fa-play"></i>
+                </a>
+                <a href="#" class="social-link" title="Twitter">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="#" class="social-link" title="邮箱">
+                    <i class="fas fa-envelope"></i>
+                </a>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2024 AI工具分享平台. 用 ❤️ 和 🤖 制作</p>
+                <p style="margin-top: 0.5rem;">致力于分享最前沿的AI开发工具和技术</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 滚动动画观察器
+        function observeElements() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // 平滑滚动
+        function initSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+
+        // 导航栏滚动效果
+        function initNavbarScroll() {
+            const navbar = document.querySelector('.navbar');
+            let lastScrollY = window.scrollY;
+
+            window.addEventListener('scroll', () => {
+                const currentScrollY = window.scrollY;
+                
+                if (currentScrollY > 100) {
+                    navbar.style.background = 'rgba(26, 31, 58, 0.98)';
+                    navbar.style.backdropFilter = 'blur(20px)';
+                } else {
+                    navbar.style.background = 'rgba(26, 31, 58, 0.95)';
+                    navbar.style.backdropFilter = 'blur(10px)';
+                }
+                
+                lastScrollY = currentScrollY;
+            });
+        }
+
+        // 卡片悬停效果增强
+        function initCardEffects() {
+            document.querySelectorAll('.article-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-12px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            // 统计数字动画
+            const statNumbers = document.querySelectorAll('.stat-number');
+            const animateStats = () => {
+                statNumbers.forEach(stat => {
+                    const text = stat.textContent;
+                    if (text.includes('%')) {
+                        // 处理百分比
+                        const target = parseInt(text);
+                        animateNumber(stat, 0, target, 2000, '%');
+                    } else {
+                        // 处理普通数字
+                        const target = parseInt(text);
+                        animateNumber(stat, 0, target, 2000);
+                    }
+                });
+            };
+
+            // 数字动画函数
+            function animateNumber(element, start, end, duration, suffix = '') {
+                const range = end - start;
+                const increment = range / (duration / 16);
+                let current = start;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= end) {
+                        element.textContent = end + suffix;
+                        clearInterval(timer);
+                    } else {
+                        element.textContent = Math.floor(current) + suffix;
+                    }
+                }, 16);
+            }
+
+            // 当统计区域进入视野时触发动画
+            const statsObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setTimeout(animateStats, 500);
+                        statsObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            const statsContainer = document.querySelector('.stats-container');
+            if (statsContainer) {
+                statsObserver.observe(statsContainer);
+            }
+        }
+
+        // 添加波纹效果
+        function addRippleEffect() {
+            document.querySelectorAll('.article-link, .social-link').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.cssText = `
+                        position: absolute;
+                        border-radius: 50%;
+                        background: rgba(255, 255, 255, 0.6);
+                        transform: scale(0);
+                        animation: ripple 0.6s linear;
+                        width: ${size}px;
+                        height: ${size}px;
+                        left: ${x}px;
+                        top: ${y}px;
+                        pointer-events: none;
+                    `;
+                    
+                    this.style.position = 'relative';
+                    this.style.overflow = 'hidden';
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+        }
+
+        // 初始化所有功能
+        document.addEventListener('DOMContentLoaded', () => {
+            observeElements();
+            initSmoothScroll();
+            initNavbarScroll();
+            initCardEffects();
+            addRippleEffect();
+            
+            // 添加波纹动画样式
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes ripple {
+                    to {
+                        transform: scale(4);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+
+        // Logo点击彩蛋
+        let clickCount = 0;
+        document.querySelector('.logo').addEventListener('click', () => {
+            clickCount++;
+            if (clickCount === 5) {
+                // 创建庆祝动画
+                const celebration = document.createElement('div');
+                celebration.innerHTML = '🎉🎊✨ 恭喜发现隐藏彩蛋！你是第 ' + Math.floor(Math.random() * 1000 + 1) + ' 个发现的人！';
+                celebration.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 2rem;
+                    border-radius: 20px;
+                    font-size: 1.2rem;
+                    font-weight: bold;
+                    z-index: 10000;
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                    animation: celebrationPop 0.5s ease-out, celebrationFade 3s ease-out 2s forwards;
+                    text-align: center;
+                    max-width: 400px;
+                `;
+                
+                document.body.appendChild(celebration);
+                setTimeout(() => celebration.remove(), 5000);
+                clickCount = 0;
+                
+                // 添加庆祝动画样式
+                if (!document.getElementById('celebration-styles')) {
+                    const celebrationStyles = document.createElement('style');
+                    celebrationStyles.id = 'celebration-styles';
+                    celebrationStyles.textContent = `
+                        @keyframes celebrationPop {
+                            0% { transform: translate(-50%, -50%) scale(0); }
+                            100% { transform: translate(-50%, -50%) scale(1); }
+                        }
+                        @keyframes celebrationFade {
+                            0% { opacity: 1; }
+                            100% { opacity: 0; }
+                        }
+                    `;
+                    document.head.appendChild(celebrationStyles);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
